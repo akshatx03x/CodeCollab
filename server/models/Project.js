@@ -5,7 +5,10 @@ const projectSchema = new mongoose.Schema({
   description: String,
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   team: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
-  code: { type: String, default: "" },
+  files: [{
+    name: { type: String, required: true },
+    content: { type: String, default: "" }
+  }],
   language: { type: String, default: "javascript" },
   members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   createdAt: { type: Date, default: Date.now },

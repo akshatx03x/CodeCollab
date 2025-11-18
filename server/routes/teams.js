@@ -1,6 +1,6 @@
 import express from "express"
 import Team from "../models/Team.js"
-import { verifyToken } from "../middleware/auth.js"
+import verifyToken from "../middleware/auth.js"
 
 const router = express.Router()
 
@@ -11,8 +11,8 @@ router.post("/", verifyToken, async (req, res) => {
     const team = new Team({
       name,
       description,
-      owner: req.userId,
-      members: [req.userId],
+      owner: req.user.id,
+      members: [req.user.id],
     })
     await team.save()
     res.status(201).json(team)
@@ -25,7 +25,7 @@ router.post("/", verifyToken, async (req, res) => {
 router.get("/", verifyToken, async (req, res) => {
   try {
     const teams = await Team.find({
-      $or: [{ owner: req.userId }, { members: req.userId }],
+      $or: [{ owner: req.user.id }, { members: req.user.id }],
     }).populate("owner members projects")
     res.json(teams)
   } catch (error) {

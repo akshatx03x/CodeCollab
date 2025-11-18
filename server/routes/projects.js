@@ -1,6 +1,6 @@
 import express from "express"
 import Project from "../models/Project.js"
-import { verifyToken } from "../middleware/auth.js"
+import verifyToken from "../middleware/auth.js"
 
 const router = express.Router()
 
@@ -12,8 +12,9 @@ router.post("/", verifyToken, async (req, res) => {
       name,
       description,
       language,
-      owner: req.userId,
-      members: [req.userId],
+      owner: req.user.id,
+      members: [req.user.id],
+      files: [{ name: "main.js", content: "" }], // Default initial file
     })
     await project.save()
     res.status(201).json(project)
@@ -66,6 +67,24 @@ router.patch("/:id/code", verifyToken, async (req, res) => {
     res.json(project)
   } catch (error) {
     res.status(500).json({ message: "Failed to update code" })
+  }
+})
+
+// Delete project
+router.delete("/:id", verifyToken, async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id)
+    if (!project) return res.status(404).json({ message: "Project not found" })
+
+    // Check if user is the owner
+    if (project.owner.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Only project owner can delete the project" })
+    }
+
+    await Project.findByIdAndDelete(req.params.id)
+    res.json({ message: "Project deleted successfully" })
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete project" })
   }
 })
 

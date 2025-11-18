@@ -1,6 +1,6 @@
 import express from "express"
 import Issue from "../models/Issue.js"
-import { verifyToken } from "../middleware/auth.js"
+import verifyToken from "../middleware/auth.js"
 
 const router = express.Router()
 
@@ -13,7 +13,7 @@ router.post("/", verifyToken, async (req, res) => {
       title,
       description,
       priority,
-      creator: req.userId,
+      creator: req.user.id,
     })
     await issue.save()
     await issue.populate("creator assignee")
@@ -56,7 +56,7 @@ router.post("/:id/stamps", verifyToken, async (req, res) => {
     issue.stamps.push({
       label,
       color,
-      createdBy: req.userId,
+      createdBy: req.user.id,
     })
     await issue.save()
     res.json(issue)

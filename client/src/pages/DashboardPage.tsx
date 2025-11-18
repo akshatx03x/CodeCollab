@@ -4,14 +4,14 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import toast from "react-hot-toast"
-import { Plus, Code2, Users, Sparkles, Zap, Globe } from "lucide-react"
+import { Plus, Code2, Users, Sparkles, Zap, Globe, Trash2 } from "lucide-react"
 import LoginModal from "../components/LoginModal"
 
 interface Project {
   _id: string
   name: string
   description: string
-  owner: { name: string }
+  owner: { _id: string; name: string }
   members: Array<{ _id: string }>
   createdAt: string
 }
@@ -85,6 +85,31 @@ export default function DashboardPage() {
     }
   }
 
+  const deleteProject = async (projectId: string) => {
+    if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        setProjects(projects.filter(p => p._id !== projectId))
+        toast.success("Project deleted successfully")
+      } else {
+        const error = await response.json()
+        toast.error(error.message || "Failed to delete project")
+      }
+    } catch (error) {
+      toast.error("Failed to delete project")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       {/* Animated Background */}
@@ -125,8 +150,7 @@ export default function DashboardPage() {
                 </h1>
               </div>
               {user ? (
-                <p className="text-gray-400 ml-13 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
+                <p className="text-gray-400 ml-13 flex items-center gap-2 px-14">
                   Welcome back, <span className="text-purple-300 font-medium">{user.name}</span>
                 </p>
               ) : (
@@ -258,21 +282,31 @@ export default function DashboardPage() {
                       
                       <div className="flex items-center justify-between pt-4 border-t border-white/10">
                         <div className="flex items-center gap-2">
-                          <div className="flex -space-x-2">
-                            {[...Array(Math.min(project.members.length, 3))].map((_, i) => (
-                              <div key={i} className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full border-2 border-black flex items-center justify-center text-xs text-white font-medium">
-                                {i + 1}
-                              </div>
-                            ))}
+                          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                            <Code2 className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-sm text-gray-400">
-                            {project.members.length} {project.members.length === 1 ? 'member' : 'members'}
+                            Created by {project.owner.name}
                           </span>
                         </div>
-                        <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                          <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                        <div className="flex items-center gap-2">
+                          {user && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                deleteProject(project._id)
+                              }}
+                              className="w-8 h-8 bg-red-500/10 hover:bg-red-500/20 rounded-lg flex items-center justify-center transition-colors"
+                              title="Delete project"
+                            >
+                              <Trash2 className="w-4 h-4 text-red-400" />
+                            </button>
+                          )}
+                          <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                            <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
                         </div>
                       </div>
                     </div>

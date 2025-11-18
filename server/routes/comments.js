@@ -1,6 +1,6 @@
 import express from "express"
 import Comment from "../models/Comment.js"
-import { verifyToken } from "../middleware/auth.js"
+import verifyToken from "../middleware/auth.js"
 
 const router = express.Router()
 
@@ -10,7 +10,7 @@ router.post("/", verifyToken, async (req, res) => {
     const { issueId, content } = req.body
     const comment = new Comment({
       issue: issueId,
-      author: req.userId,
+      author: req.user.id,
       content,
     })
     await comment.save()
