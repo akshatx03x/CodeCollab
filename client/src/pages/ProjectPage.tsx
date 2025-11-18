@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { useParams } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
@@ -24,24 +23,31 @@ export default function ProjectPage() {
   const [loading, setLoading] = useState(true)
   const [activeUsers, setActiveUsers] = useState<string[]>([])
   const socketRef = useRef<any>(null)
-  const { token } = useAuth()
+  const { token, user } = useAuth()
 
+  /* ---------------------------------------------------------
+     Fetch Project
+  --------------------------------------------------------- */
   useEffect(() => {
     fetchProject()
     initSocket()
 
     return () => {
       if (socketRef.current) {
+        socketRef.current.emit("leave-project", projectId, user?.name)
         socketRef.current.disconnect()
       }
     }
-  }, [projectId])
+  }, [projectId, user?.name])
 
   const fetchProject = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await fetch(
+        `http://localhost:5000/api/projects/${projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       const data = await response.json()
       setProject(data)
       setCode(data.code)
@@ -52,10 +58,14 @@ export default function ProjectPage() {
     }
   }
 
+  /* ---------------------------------------------------------
+     Initialize Socket
+  --------------------------------------------------------- */
   const initSocket = () => {
     socketRef.current = io("http://localhost:5000")
+
     socketRef.current.on("connect", () => {
-      socketRef.current.emit("join-project", projectId)
+      socketRef.current.emit("join-project", projectId, user?.name)
     })
 
     socketRef.current.on("code-updated", (newCode: string) => {
@@ -66,11 +76,19 @@ export default function ProjectPage() {
       setActiveUsers(users)
     })
 
-    socketRef.current.on("user-joined", (userId: string) => {
-      toast.success(`${userId} joined the project`)
+    socketRef.current.on("user-joined", (userName: string) => {
+      toast.success(`${userName} joined the project`)
+    })
+
+    socketRef.current.on("user-left", (userName: string) => {
+      setActiveUsers(prev => prev.filter(u => u !== userName))
+      toast(`${userName} left the project`)
     })
   }
 
+  /* ---------------------------------------------------------
+     Handlers
+  --------------------------------------------------------- */
   const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newCode = e.target.value
     setCode(newCode)
@@ -79,97 +97,132 @@ export default function ProjectPage() {
 
   const saveCode = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}/code`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ code }),
-      })
+      await fetch(
+        `http://localhost:5000/api/projects/${projectId}/code`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ code }),
+        }
+      )
       toast.success("Code saved successfully")
     } catch (error) {
       toast.error("Failed to save code")
     }
   }
 
+  /* ---------------------------------------------------------
+     Loading Screen
+  --------------------------------------------------------- */
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#1e1e1e] text-gray-300">
+        Loading project...
+      </div>
+    )
   }
 
+  /* ---------------------------------------------------------
+     VS CODE UI
+  --------------------------------------------------------- */
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
-      {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{project?.name}</h1>
-          <p className="text-gray-400 text-sm">JavaScript • Collaborative Editing Enabled</p>
+    <div className="flex min-h-screen bg-[#1e1e1e] text-gray-200">
+
+      {/* -----------------------------------------------------
+         LEFT SIDEBAR (VS CODE STYLE)
+      ------------------------------------------------------- */}
+      <div className="w-14 bg-[#252526] flex flex-col items-center py-4 space-y-6 border-r border-[#333]">
+        <div className="w-8 h-8 bg-[#3c3c3c] rounded-md flex items-center justify-center cursor-pointer">
+          <Users className="w-5 h-5 text-gray-300" />
         </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-gray-400" />
-            <div className="flex -space-x-2">
-              {project?.members.slice(0, 3).map((member) => (
-                <div
-                  key={member._id}
-                  className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs"
-                  title={member.name}
-                >
-                  {member.name[0]}
-                </div>
-              ))}
-              {project && project.members.length > 3 && (
-                <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-white text-xs">
-                  +{project.members.length - 3}
-                </div>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={saveCode}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
-          >
-            <Save className="w-5 h-5" />
-            Save
-          </button>
-          <a
-            href={`/project/${projectId}/issues`}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
-          >
-            <AlertCircle className="w-5 h-5" />
-            Issues
-          </a>
-        </div>
+
+        <button
+          onClick={saveCode}
+          className="w-8 h-8 bg-[#3c3c3c] rounded-md flex items-center justify-center cursor-pointer"
+        >
+          <Save className="w-5 h-5 text-gray-300" />
+        </button>
+
+        <a
+          href={`/project/${projectId}/issues`}
+          className="w-8 h-8 bg-[#3c3c3c] rounded-md flex items-center justify-center cursor-pointer"
+        >
+          <AlertCircle className="w-5 h-5 text-gray-300" />
+        </a>
       </div>
 
-      {/* Editor */}
-      <div className="flex-1 flex gap-6 p-6 overflow-hidden">
-        <div className="flex-1 flex flex-col">
-          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg flex flex-col flex-1">
-            <textarea
-              value={code}
-              onChange={handleCodeChange}
-              className="flex-1 bg-gray-900 text-gray-100 font-mono text-sm p-4 focus:outline-none resize-none"
-              placeholder="Write your code here..."
-            />
+      {/* -----------------------------------------------------
+         MAIN CONTENT AREA
+      ------------------------------------------------------- */}
+      <div className="flex-1 flex flex-col">
+
+        {/* TOP BAR */}
+        <div className="flex items-center justify-between bg-[#2d2d2d] px-4 py-2 border-b border-[#3b3b3b]">
+          <div className="flex items-center space-x-4">
+            <span className="text-lg text-white font-semibold">{project?.name}</span>
+            <span className="text-xs bg-blue-600 px-2 py-0.5 rounded">JavaScript</span>
+            <span className="text-xs text-gray-400">Collaboration Active</span>
+          </div>
+
+          <button
+            onClick={saveCode}
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" /> Save
+          </button>
+        </div>
+
+        {/* FILE TABS */}
+        <div className="flex bg-[#1e1e1e] border-b border-[#3b3b3b]">
+          <div className="px-4 py-2 bg-[#252526] text-white border-r border-[#3b3b3b]">
+            main.js
           </div>
         </div>
 
-        {/* Preview/Active Users */}
-        <div className="w-64 bg-gray-800 rounded-lg p-4 shadow-lg">
-          <h3 className="text-white font-bold mb-4">Active Collaborators</h3>
-          {activeUsers.length === 0 ? (
-            <p className="text-gray-400 text-sm">No other users connected</p>
-          ) : (
-            <div className="space-y-2">
-              {activeUsers.map((user, idx) => (
-                <div key={idx} className="bg-gray-700 rounded p-2 flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-white text-sm">{user}</span>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* -----------------------------------------------------
+           EDITOR + ACTIVE USER PANEL
+        ------------------------------------------------------- */}
+        <div className="flex-1 flex">
+
+          {/* TEXT EDITOR */}
+          <textarea
+            value={code}
+            onChange={handleCodeChange}
+            className="flex-1 bg-[#1e1e1e] text-gray-200 font-mono text-sm p-4 focus:outline-none resize-none"
+            spellCheck="false"
+          />
+
+          {/* RIGHT SIDEBAR */}
+          <div className="w-64 bg-[#252526] border-l border-[#333] p-4">
+            <h3 className="text-white font-semibold mb-3">Active Users</h3>
+
+            {activeUsers.length === 0 ? (
+              <p className="text-gray-400 text-sm">No active users</p>
+            ) : (
+              <div className="space-y-2">
+                {activeUsers.map((user, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-[#333] rounded p-2 flex items-center gap-2"
+                  >
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-200">{user}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* -----------------------------------------------------
+           BOTTOM STATUS BAR
+        ------------------------------------------------------- */}
+        <div className="bg-[#007acc] text-white text-sm px-4 py-2 flex justify-between">
+          <span>VS Code Mode Enabled</span>
+          <span>{activeUsers.length} Active</span>
         </div>
       </div>
     </div>

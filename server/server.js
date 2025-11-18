@@ -44,11 +44,11 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id)
 
   // Join project room
-  socket.on("join-project", (projectId, userId) => {
+  socket.on("join-project", (projectId, userName) => {
     socket.join(projectId)
-    activeEditors[projectId] = { ...activeEditors[projectId], [socket.id]: userId }
-    socket.emit("active-users", Object.values(activeEditors[projectId] || {}))
-    socket.to(projectId).emit("user-joined", userId)
+    activeEditors[projectId] = { ...activeEditors[projectId], [socket.id]: userName }
+    io.to(projectId).emit("active-users", Object.values(activeEditors[projectId] || {}))
+    socket.to(projectId).emit("user-joined", userName)
   })
 
   // Code changes - real-time sync
@@ -62,16 +62,26 @@ io.on("connection", (socket) => {
   })
 
   // Leave project
-  socket.on("leave-project", (projectId, userId) => {
+  socket.on("leave-project", (projectId, userName) => {
     socket.leave(projectId)
     if (activeEditors[projectId]) {
       delete activeEditors[projectId][socket.id]
     }
-    socket.to(projectId).emit("user-left", userId)
+    io.to(projectId).emit("active-users", Object.values(activeEditors[projectId] || {}))
+    socket.to(projectId).emit("user-left", userName)
   })
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id)
+    // Clean up active editors on disconnect
+    for (const projectId in activeEditors) {
+      if (activeEditors[projectId][socket.id]) {
+        const userName = activeEditors[projectId][socket.id]
+        delete activeEditors[projectId][socket.id]
+        io.to(projectId).emit("active-users", Object.values(activeEditors[projectId] || {}))
+        socket.to(projectId).emit("user-left", userName)
+      }
+    }
   })
 })
 

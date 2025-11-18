@@ -22,12 +22,10 @@ router.post("/", verifyToken, async (req, res) => {
   }
 })
 
-// Get all projects for user
-router.get("/", verifyToken, async (req, res) => {
+// Get all projects (public access)
+router.get("/", async (req, res) => {
   try {
-    const projects = await Project.find({
-      $or: [{ owner: req.userId }, { members: req.userId }],
-    }).populate("owner members")
+    const projects = await Project.find({}).populate("owner members")
     res.json(projects)
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch projects" })
