@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext"
 import toast from "react-hot-toast"
 import { Plus, Code2, Users, Sparkles, Zap, Globe, Trash2 } from "lucide-react"
 import LoginModal from "../components/LoginModal"
+import { API_BASE_URL } from "../config/api"
 
 interface Project {
   _id: string

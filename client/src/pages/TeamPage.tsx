@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import toast from "react-hot-toast"
 import { Users, Plus, Mail } from "lucide-react"
+import { API_BASE_URL } from "../config/api"
 
 interface Team {
   _id: string
