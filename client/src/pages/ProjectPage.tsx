@@ -50,14 +50,23 @@ export default function ProjectPage() {
       const res = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
+      if (!res.ok) {
+        if (res.status === 401) {
+          toast.error("Unauthorized, please login again")
+          navigate("/login")
+          return
+        }
+        throw new Error('Failed to fetch project')
+      }
       const data = await res.json()
       setProject(data)
-      setFiles(data.files || [])
-      if (data.files?.length > 0) {
-        setSelectedFile(data.files[0].name)
-        setCode(data.files[0].content)
+      const validFiles = (data.files || []).filter(f => f && typeof f === 'object' && f.name)
+      setFiles(validFiles)
+      if (validFiles.length > 0) {
+        setSelectedFile(validFiles[0].name)
+        setCode(validFiles[0].content)
       }
-    } catch {
+    } catch (error) {
       toast.error("Failed to load project")
     } finally {
       setLoading(false)
