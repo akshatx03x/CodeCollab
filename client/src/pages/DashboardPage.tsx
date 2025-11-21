@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
     setLoading(true)
     try {
-      const response = await fetch("http://localhost:5000/api/projects", {
+      const response = await fetch(`${API_BASE_URL}/api/projects`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext"
 import { io } from "socket.io-client"
 import toast from "react-hot-toast"
 import { Save, Users, Trash2, Plus, Code2 } from "lucide-react"
+import { API_BASE_URL } from "../config/api"
 
 interface File {
   name: string
@@ -47,7 +48,7 @@ export default function ProjectPage() {
 
   const fetchProject = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) {
@@ -74,7 +75,7 @@ export default function ProjectPage() {
   }
 
   const initSocket = () => {
-    socketRef.current = io("http://localhost:5000")
+    socketRef.current = io(API_BASE_URL)
     socketRef.current.on("connect", () => socketRef.current.emit("join-project", projectId, user?.name))
 
     socketRef.current.on("file-updated", (fileName: string, content: string) => {
@@ -99,7 +100,7 @@ export default function ProjectPage() {
 
   const saveCode = async () => {
     try {
-      await fetch(`http://localhost:5000/api/code/projects/${projectId}/files/${encodeURIComponent(selectedFile)}`, {
+      await fetch(`${API_BASE_URL}/api/code/projects/${projectId}/files/${encodeURIComponent(selectedFile)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ content: code }),
@@ -123,7 +124,7 @@ export default function ProjectPage() {
     if (!file) return
     const content = await file.text()
     try {
-      const res = await fetch(`http://localhost:5000/api/code/projects/${projectId}/files`, {
+      const res = await fetch(`${API_BASE_URL}/api/code/projects/${projectId}/files`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: file.name, content }),
@@ -141,7 +142,7 @@ export default function ProjectPage() {
   const deleteFile = async (name: string) => {
     if (files.length <= 1) return toast.error("Can't delete last file")
     try {
-      await fetch(`http://localhost:5000/api/code/projects/${projectId}/files/${encodeURIComponent(name)}`, {
+      await fetch(`${API_BASE_URL}/api/code/projects/${projectId}/files/${encodeURIComponent(name)}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       })
