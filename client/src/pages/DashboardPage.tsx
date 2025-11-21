@@ -40,7 +40,7 @@ export default function DashboardPage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/projects")
+      const response = await fetch(`${API_BASE_URL}/api/projects`)
       if (response.ok) {
         const data = await response.json()
         setProjects(Array.isArray(data) ? data : [])
@@ -92,7 +92,7 @@ export default function DashboardPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
