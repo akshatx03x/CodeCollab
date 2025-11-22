@@ -137,41 +137,42 @@ export default function DashboardPage() {
         }} />
       </div>
 
-      {/* Header */}
+{/* Header */}
       <div className="relative border-b border-white/5 backdrop-blur-xl bg-black/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                  <Code2 className="w-6 h-6 text-white" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="space-y-1 w-full sm:w-auto">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                  <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
                   CollabCode
                 </h1>
               </div>
               {user ? (
-                <p className="text-gray-400 ml-13 flex items-center gap-2 px-14">
-                  Welcome back, <span className="text-purple-300 font-medium">{user.name}</span>
+                <p className="text-gray-400 text-sm sm:text-base ml-10 sm:ml-13 flex items-center gap-2">
+                  Welcome back, <span className="text-purple-300 font-medium truncate max-w-[150px] sm:max-w-none">{user.name}</span>
                 </p>
               ) : (
-                <p className="text-gray-400 ml-13 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
+                <p className="text-gray-400 text-sm sm:text-base ml-10 sm:ml-13 flex items-center gap-2">
+                  <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-purple-400" />
                   Welcome to CollabCode
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
               {user ? (
                 <>
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="group relative px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/50 hover:scale-105"
+                    className="group relative flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/50 hover:scale-105"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center gap-2 text-white font-medium">
-                      <Plus className="w-5 h-5" />
-                      New Project
+                    <div className="relative flex items-center justify-center gap-2 text-white font-medium text-sm sm:text-base">
+                      <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden xs:inline">New Project</span>
+                      <span className="xs:hidden">New</span>
                     </div>
                   </button>
                   <button
@@ -180,7 +181,7 @@ export default function DashboardPage() {
                       localStorage.removeItem("user")
                       window.location.reload()
                     }}
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all duration-300 hover:scale-105"
+                    className="px-3 sm:px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all duration-300 hover:scale-105 text-sm sm:text-base"
                   >
                     Logout
                   </button>
@@ -188,7 +189,7 @@ export default function DashboardPage() {
               ) : (
                 <button
                   onClick={() => setShowLoginModal(true)}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 rounded-xl text-white font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50"
+                  className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 rounded-xl text-white font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 text-sm sm:text-base"
                 >
                   Login
                 </button>
