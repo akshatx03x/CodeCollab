@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import toast from "react-hot-toast"
-import { Plus, Code2, Users, Sparkles, Zap, Globe, Trash2 } from "lucide-react"
+import { Plus, Code2, Sparkles, Zap, Globe, Trash2 } from "lucide-react"
 import LoginModal from "../components/LoginModal"
 import { API_BASE_URL } from "../config/api"
 

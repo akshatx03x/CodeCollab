@@ -38,6 +38,15 @@ router.get("/:id", verifyToken, async (req, res) => {
   try {
     const project = await Project.findById(req.params.id).populate("owner members")
     if (!project) return res.status(404).json({ message: "Project not found" })
+
+    // Add user as member if not already a member
+    if (!project.members.some(member => member._id.toString() === req.user.id)) {
+      project.members.push(req.user.id)
+      await project.save()
+      // Re-populate after save
+      await project.populate("owner members")
+    }
+
     res.json(project)
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch project" })
