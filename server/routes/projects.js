@@ -27,7 +27,7 @@ router.post("/", verifyToken, async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const projects = await Project.find({}).populate("owner members")
-    res.json(projects)
+    res.json(projects.filter(p => p.owner))
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch projects" })
   }

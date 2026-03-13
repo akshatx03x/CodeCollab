@@ -288,7 +288,7 @@ export default function DashboardPage() {
                             <Code2 className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-sm text-gray-400">
-                            Created by {project.owner.name}
+                            Created by {project.owner?.name || 'Unknown'}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
