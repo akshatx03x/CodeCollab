@@ -6,7 +6,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { io } from "socket.io-client"
 import toast from "react-hot-toast"
-import { Save, Users, Trash2, Plus, Code2, Menu, X, FileText } from "lucide-react"
+import { Save, Users, Trash2, Plus, Code2, Menu, X, FileText, Terminal, Radio, ShieldAlert, Cpu } from "lucide-react"
 import { API_BASE_URL } from "../config/api"
 
 interface File {
@@ -32,6 +32,7 @@ export default function ProjectPage() {
   const [activeUsers, setActiveUsers] = useState<string[]>([])
   const [showLeftSidebar, setShowLeftSidebar] = useState(false)
   const [showRightSidebar, setShowRightSidebar] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const socketRef = useRef<any>(null)
   const { token, user } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -48,6 +49,10 @@ export default function ProjectPage() {
     }
   }, [projectId, user?.name])
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY })
+  }
+
   const fetchProject = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
@@ -55,22 +60,22 @@ export default function ProjectPage() {
       })
       if (!res.ok) {
         if (res.status === 401) {
-          toast.error("Unauthorized, please login again")
+          toast.error("Handshake expired. Unauthorized authorization token.")
           navigate("/login")
           return
         }
-        throw new Error('Failed to fetch project')
+        throw new Error("Failed to fetch project")
       }
       const data = await res.json()
       setProject(data)
-      const validFiles = (data.files || []).filter(f => f && typeof f === 'object' && f.name)
+      const validFiles = (data.files || []).filter((f: any) => f && typeof f === "object" && f.name)
       setFiles(validFiles)
       if (validFiles.length > 0) {
         setSelectedFile(validFiles[0].name)
         setCode(validFiles[0].content)
       }
     } catch (error) {
-      toast.error("Failed to load project")
+      toast.error("Failed to map dynamic memory architecture workspace.")
     } finally {
       setLoading(false)
     }
@@ -82,21 +87,21 @@ export default function ProjectPage() {
 
     socketRef.current.on("file-updated", (fileName: string, content: string) => {
       if (fileName === selectedFile) setCode(content)
-      setFiles(prev => prev.map(f => f.name === fileName ? { ...f, content } : f))
+      setFiles((prev) => prev.map((f) => (f.name === fileName ? { ...f, content } : f)))
     })
 
     socketRef.current.on("active-users", (users: string[]) => setActiveUsers(users))
-    socketRef.current.on("user-joined", (name: string) => toast.success(`${name} joined`))
+    socketRef.current.on("user-joined", (name: string) => toast.success(`${name} linked to buffer channel`))
     socketRef.current.on("user-left", (name: string) => {
-      setActiveUsers(prev => prev.filter(u => u !== name))
-      toast(`${name} left`)
+      setActiveUsers((prev) => prev.filter((u) => u !== name))
+      toast(`${name} dropped session connection`)
     })
   }
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newCode = e.target.value
     setCode(newCode)
-    setFiles(prev => prev.map(f => f.name === selectedFile ? { ...f, content: newCode } : f))
+    setFiles((prev) => prev.map((f) => (f.name === selectedFile ? { ...f, content: newCode } : f)))
     socketRef.current?.emit("file-updated", projectId, selectedFile, newCode)
   }
 
@@ -115,9 +120,9 @@ export default function ProjectPage() {
 
   const selectFile = (name: string) => {
     setSelectedFile(name)
-    const file = files.find(f => f.name === name)
+    const file = files.find((f) => f.name === name)
     if (file) setCode(file.content)
-    setShowLeftSidebar(false) // Close sidebar on mobile after selecting
+    setShowLeftSidebar(false)
   }
 
   const addNewFile = () => fileInputRef.current?.click()
@@ -133,151 +138,161 @@ export default function ProjectPage() {
         body: JSON.stringify({ name: file.name, content }),
       })
       const { file: newFile } = await res.json()
-      setFiles(prev => [...prev, newFile])
+      setFiles((prev) => [...prev, newFile])
       setSelectedFile(file.name)
       setCode(content)
-      toast.success("File added")
+      toast.success("Target document dynamically injected.")
     } catch {
-      toast.error("Failed to add file")
+      toast.error("File generation pipeline blocked.")
     }
   }
 
   const deleteFile = async (name: string) => {
-    if (files.length <= 1) return toast.error("Can't delete last file")
+    if (files.length <= 1) return toast.error("Cannot delete final active working component root.")
     try {
       await fetch(`${API_BASE_URL}/api/code/projects/${projectId}/files/${encodeURIComponent(name)}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       })
-      const remaining = files.filter(f => f.name !== name)
+      const remaining = files.filter((f) => f.name !== name)
       setFiles(remaining)
       if (selectedFile === name && remaining.length > 0) {
         setSelectedFile(remaining[0].name)
         setCode(remaining[0].content)
       }
-      toast.success("File deleted")
+      toast.success("Target entity clean purged.")
     } catch {
-      toast.error("Delete failed")
+      toast.error("Purge command rejected.")
     }
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black text-white">
-        <div className="text-center">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400 text-sm sm:text-base">Loading project...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-[#050505] font-mono text-xs text-[#00e87a]">
+        <span className="animate-pulse mr-2">▋</span> Connecting socket pipelines...
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Background */}
-      <div className="fixed inset-0 bg-black" />
-      <div 
-        className="fixed inset-0 opacity-30"
+    <div
+      onMouseMove={handleMouseMove}
+      className="h-screen bg-[#050505] text-[#d4d4d4] relative overflow-hidden font-sans select-none flex flex-col"
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+        @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
+        .editor-area::placeholder { color: #222 !important; }
+      `}</style>
+
+      {/* Background Matrix Sync Grid */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px)`,
-          backgroundSize: "50px 50px"
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.005) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.005) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+          backgroundPosition: "center",
+          WebkitMaskImage: `radial-gradient(500px circle at ${mousePos.x}px ${mousePos.y}px, black 20%, transparent 100%)`,
+          maskImage: `radial-gradient(500px circle at ${mousePos.x}px ${mousePos.y}px, black 20%, transparent 100%)`,
+          transition: "mask-image 0.1s ease",
         }}
       />
 
-      <div className="relative flex flex-col lg:flex-row h-screen">
-        {/* Mobile Header */}
-        <div className="lg:hidden bg-gradient-to-r from-gray-900/90 to-black/95 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center justify-between relative z-50">
-          <button
-            onClick={() => setShowLeftSidebar(!showLeftSidebar)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            {showLeftSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-          
-          <div className="flex items-center gap-2">
-            <div
-              className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center cursor-pointer"
-              onClick={() => navigate("/")}
-            >
-              <Code2 className="w-4 h-4" />
-            </div>
-            <h1 className="text-base sm:text-lg font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-[180px]">
-              {project?.name}
-            </h1>
-          </div>
+      {/* MOBILE APPLICATION HEADER DISPLAY */}
+      <div className="lg:hidden bg-[#060606] border-b border-[#121212] px-4 py-3 flex items-center justify-between relative z-50 backdrop-blur-xl">
+        <button
+          onClick={() => setShowLeftSidebar(!showLeftSidebar)}
+          className="p-1.5 text-[#555] hover:text-[#00e87a] bg-[#0b0b0b] border border-[#141414] rounded-md transition-all"
+        >
+          {showLeftSidebar ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </button>
 
-          <button
-            onClick={() => setShowRightSidebar(!showRightSidebar)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors relative"
+        <div className="flex items-center gap-2">
+          <div
+            className="w-7 h-7 bg-[#0f0f0f] border border-[#1c1c1c] rounded-md flex items-center justify-center cursor-pointer"
+            onClick={() => navigate("/")}
           >
-            <Users className="w-5 h-5" />
-            {activeUsers.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 rounded-full text-xs flex items-center justify-center">
-                {activeUsers.length}
-              </span>
-            )}
-          </button>
+            <Code2 className="w-3.5 h-3.5 text-[#00e87a]" />
+          </div>
+          <h1 className="font-mono text-sm font-bold text-white max-w-[140px] truncate">
+            {project?.name}
+          </h1>
         </div>
 
-        {/* LEFT SIDEBAR - Responsive */}
-        <div className={`
+        <button
+          onClick={() => setShowRightSidebar(!showRightSidebar)}
+          className="p-1.5 text-[#555] hover:text-[#00e87a] bg-[#0b0b0b] border border-[#141414] rounded-md transition-all relative"
+        >
+          <Users className="w-4 h-4" />
+          {activeUsers.length > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#00e87a] rounded-full font-mono text-[9px] font-bold text-[#050505] flex items-center justify-center shadow-[0_0_8px_#00e87a]">
+              {activeUsers.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* MAIN WORKSPACE WRAPPER SECTION FRAME */}
+      <div className="relative flex flex-1 h-full z-10 overflow-hidden">
+        
+        {/* LEFT FILE MANAGER DIRECTORY VIEW */}
+        <div
+          className={`
           fixed lg:relative inset-y-0 left-0 z-40
-          w-72 sm:w-80 lg:w-80
-          bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-xl 
-          border-r border-white/10 flex flex-col
-          transform transition-transform duration-300 ease-in-out
-          ${showLeftSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}>
-          {/* Desktop Header */}
-          <div className="hidden lg:block p-4 sm:p-6 border-b border-white/10">
-            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          w-64 bg-[#070707] border-r border-[#121212] flex flex-col
+          transform transition-transform duration-200 cubic-bezier(0.16, 1, 0.3, 1)
+          ${showLeftSidebar ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+        >
+          {/* Desktop Branding Title Box Header */}
+          <div className="hidden lg:block p-4 border-b border-[#121212] bg-[#050505]">
+            <div className="flex items-center gap-2 mb-4">
               <div
-                className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                className="w-7 h-7 bg-[#0d0d0d] border border-[#161616] rounded-md flex items-center justify-center cursor-pointer hover:border-[rgba(0,232,122,0.3)] transition-all"
                 onClick={() => navigate("/")}
               >
-                <Code2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                <Code2 className="w-3.5 h-3.5 text-[#00e87a]" />
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent truncate">
+              <h1 className="font-mono text-sm font-bold text-white truncate tracking-tight">
                 {project?.name}
               </h1>
             </div>
+            
             <button
               onClick={addNewFile}
-              className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/20 text-sm sm:text-base"
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-[#00e87a] hover:bg-[#1affaa] text-[#050505] font-mono text-xs font-semibold rounded-md transition-all shadow-[0_4px_12px_rgba(0,232,122,0.1)]"
             >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-              Add File
+              <Plus className="w-3.5 h-3.5" strokeWidth={2.5} /> append_file
             </button>
             <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" />
           </div>
 
-          {/* Mobile Header in Sidebar */}
-          <div className="lg:hidden p-4 border-b border-white/10">
+          {/* Mobile Append File Header Block */}
+          <div className="lg:hidden p-4 border-b border-[#121212] bg-[#050505]">
             <button
               onClick={addNewFile}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/20 text-sm"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-[#00e87a] text-[#050505] font-mono text-xs font-semibold rounded-md"
             >
-              <Plus className="w-4 h-4" />
-              Add File
+              <Plus className="w-3.5 h-3.5" strokeWidth={2.5} /> add_file.sh
             </button>
             <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" />
           </div>
 
-          {/* File List */}
-          <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-2">
+          {/* Nav Directory File Index Render Tree */}
+          <div className="flex-1 overflow-y-auto px-2 py-3 bg-[#070707]">
+            <div className="font-mono text-[9px] text-[#444] px-3 mb-2 tracking-widest uppercase">Workspace Files</div>
             {files.map((file) => (
               <div
                 key={file.name}
                 onClick={() => selectFile(file.name)}
-                className={`group flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 my-1.5 sm:my-2 rounded-xl cursor-pointer transition-all duration-300 ${
+                className={`group flex items-center justify-between px-3 py-2 my-1 rounded-md cursor-pointer border transition-all duration-150 ${
                   selectedFile === file.name
-                    ? "bg-gradient-to-r from-purple-600/30 to-cyan-600/30 border border-purple-500/50"
-                    : "hover:bg-white/5"
+                    ? "bg-[rgba(0,232,122,0.03)] border-[rgba(0,232,122,0.15)] text-white"
+                    : "bg-transparent border-transparent text-[#737373] hover:text-[#d4d4d4] hover:bg-[#0b0b0b]"
                 }`}
               >
-                <span className="text-xs sm:text-sm font-medium truncate flex items-center gap-2">
-                  <FileText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="font-mono text-xs truncate flex items-center gap-2">
+                  <FileText className={`w-3.5 h-3.5 flex-shrink-0 ${selectedFile === file.name ? "text-[#00e87a]" : "text-[#444]"}`} />
                   {file.name}
                 </span>
                 <button
@@ -285,19 +300,19 @@ export default function ProjectPage() {
                     e.stopPropagation()
                     deleteFile(file.name)
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 sm:p-2 rounded-lg hover:bg-red-500/20 transition-opacity flex-shrink-0"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[rgba(244,63,94,0.08)] transition-all flex-shrink-0"
                 >
-                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-400" />
+                  <Trash2 className="w-3 h-3 text-[#f43f5e]" />
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Overlay for mobile sidebars */}
+        {/* Backdrop overlay curtain layer for tablet view layouts */}
         {(showLeftSidebar || showRightSidebar) && (
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 lg:hidden"
             onClick={() => {
               setShowLeftSidebar(false)
               setShowRightSidebar(false)
@@ -305,21 +320,24 @@ export default function ProjectPage() {
           />
         )}
 
-        {/* MAIN EDITOR */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Top Bar - Desktop Only */}
-          <div className="hidden lg:flex bg-gradient-to-r from-purple-900/20 to-cyan-900/20 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3 sm:py-4 items-center justify-between overflow-x-auto">
-            <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+        {/* CENTRAL LIVE CONSOLE AND CODE TEXT EDITOR PANEL */}
+        <div className="flex-1 flex flex-col min-w-0 bg-[#050505]">
+          
+          {/* Top Bar Navigation Tabs Container Layout */}
+          <div className="hidden lg:flex bg-[#060606] border-b border-[#121212] px-4 h-12 items-center justify-between overflow-hidden">
+            <div className="flex h-full items-end gap-1 overflow-x-auto scrollbar-none">
               {files.map((f) => (
                 <div
                   key={f.name}
                   onClick={() => selectFile(f.name)}
-                  className={`px-3 sm:px-6 py-2 sm:py-3 rounded-t-xl cursor-pointer transition-all duration-300 border-x border-t border-white/10 whitespace-nowrap text-xs sm:text-base ${
+                  className={`px-4 h-9 flex items-center font-mono text-xs border-t border-x rounded-t-md cursor-pointer transition-all duration-150 whitespace-nowrap ${
                     selectedFile === f.name
-                      ? "bg-gradient-to-b from-gray-900 to-black text-white border-b-0"
-                      : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                      ? "bg-[#090909] border-[#141414] text-white border-b-[#090909]"
+                      : "bg-[#050505]/40 border-transparent text-[#444] hover:text-[#888] hover:bg-[#070707]"
                   }`}
+                  style={{ marginBottom: "-1px" }}
                 >
+                  <span className={`w-1.5 h-1.5 rounded-full mr-2 ${selectedFile === f.name ? "bg-[#00e87a]" : "bg-transparent"}`} />
                   {f.name}
                 </div>
               ))}
@@ -327,27 +345,35 @@ export default function ProjectPage() {
 
             <button
               onClick={saveCode}
-              className="group relative px-4 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl overflow-hidden shadow-lg shadow-purple-500/30 hover:scale-105 transition-all duration-300 ml-4 flex-shrink-0"
+              className="h-7 px-4 bg-[#0d0d0d] border border-[#1a1a1a] hover:border-[rgba(0,232,122,0.25)] hover:bg-[rgba(0,232,122,0.03)] rounded-md font-mono text-xs text-[#666] hover:text-[#00e87a] flex items-center gap-1.5 transition-all duration-200"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex items-center gap-2 font-medium text-sm sm:text-base">
-                <Save className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden sm:inline">Save Code</span>
-                <span className="sm:hidden">Save</span>
-              </div>
+              <Save className="w-3 h-3" />
+              <span>save_state</span>
             </button>
           </div>
 
-          {/* Mobile File Selector */}
-          <div className="lg:hidden bg-gradient-to-r from-purple-900/20 to-cyan-900/20 backdrop-blur-xl border-b border-white/10 px-4 py-2 overflow-x-auto flex gap-2 scrollbar-hide">
+          {/* Desktop Sub-Header Interface Data Line Bar */}
+          <div className="hidden lg:flex bg-[#080808] border-b border-[#111] h-8 px-4 items-center justify-between font-mono text-[10px] text-[#444]">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-3 h-3 text-[#222]" />
+              <span>BUFFER_PATH: /src/components/{selectedFile}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span>STATUS: NOMINAL</span>
+              <span>ENCODING: UTF-8</span>
+            </div>
+          </div>
+
+          {/* Mobile Tab Alternator Slider Menu */}
+          <div className="lg:hidden bg-[#070707] border-b border-[#121212] px-4 py-2 overflow-x-auto flex gap-1.5 scrollbar-none">
             {files.map((f) => (
               <button
                 key={f.name}
                 onClick={() => selectFile(f.name)}
-                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg whitespace-nowrap text-xs transition-all flex-shrink-0 ${
+                className={`px-3 py-1 rounded font-mono text-xs border transition-all ${
                   selectedFile === f.name
-                    ? "bg-gradient-to-r from-purple-600 to-cyan-600 text-white"
-                    : "bg-white/5 text-gray-400"
+                    ? "bg-[rgba(0,232,122,0.04)] border-[rgba(0,232,122,0.15)] text-[#00e87a]"
+                    : "bg-[#050505] border-[#141414] text-[#555]"
                 }`}
               >
                 {f.name}
@@ -355,69 +381,85 @@ export default function ProjectPage() {
             ))}
           </div>
 
-          {/* Code Editor */}
-          <div className="flex-1 bg-gradient-to-br from-gray-900/50 to-black/80 backdrop-blur-xl overflow-hidden">
+          {/* CORE CODE COMPILATION TERMINAL FIELD EDITOR */}
+          <div className="flex-1 bg-[#090909] flex relative overflow-hidden">
+            {/* Structural Column Layout Line Numbers Simulation */}
+            <div className="w-11 bg-[#070707] border-r border-[#121212] pt-5 flex flex-col items-center select-none font-mono text-[11px] text-[#222] leading-relaxed text-right pr-2">
+              {Array.from({ length: 35 }).map((_, i) => (
+                <div key={i} className="h-6 w-full">{i + 1}</div>
+              ))}
+            </div>
+
             <textarea
               value={code}
               onChange={handleCodeChange}
-              className="w-full h-full p-4 sm:p-6 lg:p-8 text-gray-100 bg-transparent font-mono text-xs sm:text-sm lg:text-base leading-relaxed resize-none focus:outline-none"
+              className="editor-area flex-1 p-5 text-[#d4d4d4] bg-transparent font-mono text-xs sm:text-sm leading-6 resize-none focus:outline-none overflow-y-auto"
+              style={{ tabSize: 4 }}
               spellCheck={false}
-              placeholder="// Start coding... Changes are live!"
+              placeholder="// System compiler listening for changes... Operations sync live across targets."
             />
           </div>
 
-          {/* Mobile Save Button */}
-          <div className="lg:hidden bg-gradient-to-r from-purple-900/20 to-cyan-900/20 backdrop-blur-xl border-t border-white/10 px-4 py-3">
+          {/* Mobile Bottom Float Save Button Interface */}
+          <div className="lg:hidden bg-[#060606] border-t border-[#121212] px-4 py-2.5">
             <button
               onClick={saveCode}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-xl font-medium shadow-lg shadow-purple-500/30"
+              className="w-full flex items-center justify-center gap-1.5 py-2 bg-[#00e87a] text-[#050505] font-mono text-xs font-semibold rounded-md shadow-md"
             >
-              <Save className="w-5 h-5" />
-              Save Code
+              <Save className="w-4 h-4" />
+              <span>Execute Save State</span>
             </button>
-          </div>
-
-          {/* Status Bar */}
-          <div className="hidden sm:flex bg-gradient-to-r from-purple-600/20 to-cyan-600/20 backdrop-blur-xl border-t border-white/10 px-4 sm:px-8 py-2 sm:py-3 items-center justify-between text-xs sm:text-sm">
-            <span className="truncate">Live Collaboration • {selectedFile}</span>
-            <span className="flex-shrink-0">{activeUsers.length} Online</span>
           </div>
         </div>
 
-        {/* RIGHT SIDEBAR - Responsive */}
-        <div className={`
+        {/* RIGHT TEAM ACTIVITY REAL-TIME CHANNEL RADAR SIDEBAR */}
+        <div
+          className={`
           fixed lg:relative inset-y-0 right-0 z-40
-          w-72 sm:w-80 lg:w-80
-          bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-xl 
-          border-l border-white/10 flex flex-col
-          transform transition-transform duration-300 ease-in-out
-          ${showRightSidebar ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
-          mt-[57px] lg:mt-0
-        `}>
-          {/* Active Contributors */}
-          <div className="p-4 sm:p-6 border-b border-white/10">
-            <h3 className="text-xs sm:text-sm font-semibold text-purple-300 mb-3 sm:mb-4 flex items-center gap-2">
-              <Users className="w-3 h-3 sm:w-4 sm:h-4" /> 
-              Active Contributors ({activeUsers.length})
+          w-64 bg-[#070707] border-l border-[#121212] flex flex-col
+          transform transition-transform duration-200 cubic-bezier(0.16, 1, 0.3, 1)
+          ${showRightSidebar ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
+          mt-[53px] lg:mt-0
+        `}
+        >
+          <div className="p-4 border-b border-[#121212] bg-[#050505]">
+            <h3 className="font-mono text-xs font-semibold text-white tracking-tight flex items-center gap-2">
+              <Radio className="w-3.5 h-3.5 text-[#00e87a] animate-pulse" />
+              Users Connected ({activeUsers.length})
             </h3>
-            <div className="space-y-2">
-              {activeUsers.length > 0 ? (
-                activeUsers.map((name, i) => (
-                  <div key={i} className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 bg-white/5 rounded-lg">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      {name[0].toUpperCase()}
-                    </div>
-                    <span className="text-xs sm:text-sm truncate flex-1">{name}</span>
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 text-xs sm:text-sm">
-                  No active users
-                </div>
-              )}
-            </div>
           </div>
+          
+          <div className="flex-1 overflow-y-auto px-2 py-3 bg-[#070707] space-y-1">
+            {activeUsers.length > 0 ? (
+              activeUsers.map((name, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2 bg-[#0a0a0a] border border-[#141414] rounded-md transition-all">
+                  <div className="w-6 h-6 rounded bg-[#111] border border-[#222] font-mono text-[10px] font-bold text-[#00e87a] flex items-center justify-center flex-shrink-0">
+                    {name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span className="font-mono text-xs text-[#888] truncate flex-1">{name}</span>
+                  <div className="w-1.5 h-1.5 bg-[#00e87a] rounded-full animate-pulse shadow-[0_0_6px_#00e87a] flex-shrink-0" />
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 font-mono text-xs text-[#333] flex flex-col items-center gap-2">
+                <Cpu className="w-5 h-5 text-[#222]" />
+                <span>No secondary channels connected</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* FOOTER LOW-LEVEL RUNTIME ENVIRONMENT STATUS COMPONENT LINE BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#030303] border-t border-[#111] h-7 flex items-center px-5 gap-6 font-mono text-[10px] text-[#444] font-medium select-none">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#00e87a] shadow-[0_0_6px_#00e87a]" />
+          <span className="truncate">SOCKET_LINK: OPERATIONAL • {selectedFile || "N/A"}</span>
+        </div>
+        <div className="ml-auto flex items-center gap-1.5 text-[#333]">
+          <Users className="w-3 h-3 text-[#222]" />
+          <span>{activeUsers.length} NODES COLLABORATING</span>
         </div>
       </div>
     </div>
