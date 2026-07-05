@@ -43,7 +43,7 @@ export default function TeamPage() {
       setTeams(Array.isArray(data) ? data : [])
       setLoading(false)
     } catch (error) {
-      toast.error("Failed to load teams index")
+      toast.error("Failed to load teams. Please try again.")
       setLoading(false)
     }
   }
@@ -71,7 +71,7 @@ export default function TeamPage() {
       setTeamName("")
       setTeamDesc("")
       setShowCreateModal(false)
-      toast.success("Team space initialized")
+      toast.success("Team created successfully")
     } catch (error) {
       toast.error("Failed to create team")
     }
@@ -79,7 +79,7 @@ export default function TeamPage() {
 
   const addMember = async (teamId: string) => {
     if (!memberEmail.trim()) {
-      toast.error("Email verification address required")
+      toast.error("Email address is required")
       return
     }
 
@@ -96,7 +96,7 @@ export default function TeamPage() {
       setTeams(teams.map((t) => (t._id === teamId ? updated : t)))
       setMemberEmail("")
       setSelectedTeam(null)
-      toast.success("New member added to team array")
+      toast.success("Member added successfully")
     } catch (error) {
       toast.error("Failed to add member")
     }
@@ -105,7 +105,7 @@ export default function TeamPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#050505] font-mono text-xs text-[#00e87a]">
-        <span className="animate-pulse mr-2">▋</span> Loading teams registry...
+        <span className="animate-pulse mr-2">▋</span> Loading teams...
       </div>
     )
   }
@@ -144,7 +144,7 @@ export default function TeamPage() {
               <div className="w-2 h-2 rounded-full bg-[#00e87a] shadow-[0_0_10px_#00e87a]" />
             </div>
             <span className="font-mono text-sm font-bold tracking-tight text-white">
-              collab<span className="text-[#00e87a]">code</span>
+              Code<span className="text-[#00e87a]">Collab</span>
             </span>
             <div className="flex items-center gap-1 bg-[#0f0f0f] px-2 py-0.5 rounded border border-[#161616] ml-1 font-mono text-[10px] text-[#666]">
               <FolderGit2 className="w-2.5 h-2.5" />
@@ -156,7 +156,7 @@ export default function TeamPage() {
             onClick={() => setShowCreateModal(true)}
             className="bg-[#00e87a] hover:bg-[#1affaa] text-[#050505] font-mono text-xs font-semibold px-3.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all duration-200 shadow-[0_4px_15px_rgba(0,232,122,0.15)] hover:shadow-[0_4px_20px_rgba(0,232,122,0.3)]"
           >
-            <Plus className="w-3.5 h-3.5" strokeWidth={2.5} /> new team
+            <Plus className="w-3.5 h-3.5" strokeWidth={2.5} /> New Team
           </button>
         </div>
       </header>
@@ -168,10 +168,10 @@ export default function TeamPage() {
         <div className="flex items-end justify-between mb-8 border-b border-[#121212] pb-4">
           <div>
             <div className="flex items-center gap-1.5 mb-1 font-mono text-[11px] text-[#00e87a] tracking-wider">
-              <span>//</span> TEAM_INDEX_REGISTRY
+              <span>//</span> Team Directory
             </div>
             <h1 className="font-mono text-xl font-bold text-white tracking-tight">
-              Shared Workspace Clusters
+              Your Teams
             </h1>
           </div>
           <div className="flex items-center gap-1.5 px-3 bg-[#0b0b0b] border border-[#141414] rounded-lg h-9 font-mono text-xs text-[#666]">
@@ -187,15 +187,15 @@ export default function TeamPage() {
               <div className="bg-[#050505] border border-[#161616] rounded-lg p-3 max-w-[60px] mx-auto mb-5 flex items-center justify-center">
                 <Users className="w-6 h-6 text-[#333]" />
               </div>
-              <div className="font-mono text-sm font-semibold text-white mb-2">No Clusters Connected</div>
+              <div className="font-mono text-sm font-semibold text-white mb-2">No Teams Found</div>
               <p className="text-xs text-[#666] leading-relaxed mb-6">
-                You haven't established or been added to any collaborator workspace layers yet. Initialize a new team target to begin coding together.
+                You are not a member of any teams yet. Create a new team or ask to be invited to start collaborating.
               </p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="bg-[#00e87a] text-[#050505] font-mono text-xs font-semibold px-4 py-2 rounded-md inline-flex items-center gap-1.5 transition shadow-[0_4px_15px_rgba(0,232,122,0.15)] mx-auto"
               >
-                <Plus className="w-3.5 h-3.5" strokeWidth={2.5} /> Initialize Workspace Team
+                <Plus className="w-3.5 h-3.5" strokeWidth={2.5} /> Create a Team
               </button>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function TeamPage() {
                       <span className="text-[#00e87a] font-normal hidden group-hover:inline animate-[blink_1s_step-end_infinite]">▋</span>
                     </h3>
                     <p className="text-xs text-[#737373] mt-1.5 line-clamp-2 leading-relaxed">
-                      {team.description || "No description provided for this specific instance folder."}
+                      {team.description || "No team description provided."}
                     </p>
                   </div>
 
@@ -237,11 +237,11 @@ export default function TeamPage() {
                     <div className="flex items-center gap-4 font-mono text-[11px] text-[#555]">
                       <div className="flex items-center gap-1">
                         <Cpu className="w-3 h-3 text-[#333]" />
-                        <span><strong className="text-[#888] font-medium">{team.members.length}</strong> user paths</span>
+                        <span><strong className="text-[#888] font-medium">{team.members.length}</strong> members</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Layers className="w-3 h-3 text-[#333]" />
-                        <span><strong className="text-[#888] font-medium">{team.projects.length}</strong> components</span>
+                        <span><strong className="text-[#888] font-medium">{team.projects.length}</strong> projects</span>
                       </div>
                     </div>
 
@@ -250,7 +250,7 @@ export default function TeamPage() {
                       className="h-7 px-3 bg-[#0d0d0d] border border-[#1a1a1a] hover:border-[rgba(0,232,122,0.2)] hover:bg-[rgba(0,232,122,0.04)] rounded-md font-mono text-[11px] text-[#666] hover:text-[#00e87a] flex items-center gap-1.5 transition-all duration-200"
                     >
                       <Mail className="w-3 h-3" />
-                      <span>invite</span>
+                      <span>Invite</span>
                     </button>
                   </div>
                 </div>
@@ -268,7 +268,7 @@ export default function TeamPage() {
             <div className="bg-[#060606] border-b border-[#141414] h-11 px-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#00e87a] shadow-[0_0_8px_#00e87a]" />
-                <span className="font-mono text-[11px] text-[#555] font-medium">initialize_team.sh</span>
+                <span className="font-mono text-[11px] text-[#555] font-medium">Create Team</span>
               </div>
               <button onClick={() => setShowCreateModal(false)} className="text-[#444] hover:text-white transition p-1">
                 <X className="w-4 h-4" />
@@ -277,24 +277,24 @@ export default function TeamPage() {
 
             {/* Inputs Body form */}
             <div className="p-6">
-              <h2 className="font-mono text-sm font-bold text-white mb-1">Create Team Node</h2>
-              <p className="text-xs text-[#666] leading-relaxed mb-5">Provision a shared directory workspace for collaborative projects.</p>
+              <h2 className="font-mono text-sm font-bold text-white mb-1">Create a Team</h2>
+              <p className="text-xs text-[#666] leading-relaxed mb-5">Create a team to collaborate with other developers on projects.</p>
               
-              <label className="font-mono text-[10px] text-[#555] block mb-1.5 tracking-wider uppercase">Team Space Name</label>
+              <label className="font-mono text-[10px] text-[#555] block mb-1.5 tracking-wider uppercase">Team Name</label>
               <input
                 type="text"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                placeholder="e.g., frontend-core-mesh"
+                placeholder="e.g., frontend-team"
                 className="glow-input w-full px-3.5 py-2.5 bg-[#050505] border border-[#1c1c1c] rounded-md font-mono text-xs text-white placeholder-[#222] focus:outline-none focus:border-[#00e87a] focus:shadow-[0_0_15px_-3px_rgba(0,232,122,0.15)] transition-all mb-4"
                 required
               />
 
-              <label className="font-mono text-[10px] text-[#555] block mb-1.5 tracking-wider uppercase">Manifest Descriptor</label>
+              <label className="font-mono text-[10px] text-[#555] block mb-1.5 tracking-wider uppercase">Description</label>
               <textarea
                 value={teamDesc}
                 onChange={(e) => setTeamDesc(e.target.value)}
-                placeholder="Briefly define core collaborative variables..."
+                placeholder="Enter team description..."
                 className="glow-input w-full px-3.5 py-2.5 bg-[#050505] border border-[#1c1c1c] rounded-md font-mono text-xs text-white placeholder-[#222] focus:outline-none focus:border-[#00e87a] focus:shadow-[0_0_15px_-3px_rgba(0,232,122,0.15)] transition-all resize-none mb-5"
                 rows={3}
               />
@@ -304,13 +304,13 @@ export default function TeamPage() {
                   onClick={() => setShowCreateModal(false)}
                   className="flex-1 py-2 border border-[#1c1c1c] rounded-md font-mono text-xs text-[#666] hover:text-white hover:bg-[#0f0f0f] hover:border-[#444] transition-all"
                 >
-                  abort
+                  Cancel
                 </button>
                 <button
                   onClick={createTeam}
                   className="flex-1 py-2 bg-[#00e87a] hover:bg-[#1affaa] text-[#050505] font-mono text-xs font-semibold rounded-md transition shadow-[0_4px_15px_rgba(0,232,122,0.15)]"
                 >
-                  execute build
+                  Create Team
                 </button>
               </div>
             </div>
@@ -326,7 +326,7 @@ export default function TeamPage() {
             <div className="bg-[#060606] border-b border-[#141414] h-11 px-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#00e87a] shadow-[0_0_8px_#00e87a]" />
-                <span className="font-mono text-[11px] text-[#555] font-medium">invite_pipeline.sh</span>
+                <span className="font-mono text-[11px] text-[#555] font-medium">Invite Member</span>
               </div>
               <button onClick={() => setSelectedTeam(null)} className="text-[#444] hover:text-white transition p-1">
                 <X className="w-4 h-4" />
@@ -335,17 +335,17 @@ export default function TeamPage() {
 
             {/* Form body container */}
             <div className="p-6">
-              <h2 className="font-mono text-sm font-bold text-white mb-1">Link Target User</h2>
+              <h2 className="font-mono text-sm font-bold text-white mb-1">Invite a Collaborator</h2>
               <p className="text-xs text-[#666] leading-relaxed mb-5">
-                Inject access token paths into <span className="text-[#00e87a] font-mono">{selectedTeam.name}</span> index.
+                Add a user to the team by their email address.
               </p>
               
-              <label className="font-mono text-[10px] text-[#555] block mb-1.5 tracking-wider uppercase">User Mail Address</label>
+              <label className="font-mono text-[10px] text-[#555] block mb-1.5 tracking-wider uppercase">Email Address</label>
               <input
                 type="email"
                 value={memberEmail}
                 onChange={(e) => setMemberEmail(e.target.value)}
-                placeholder="collaborator@network.mesh"
+                placeholder="collaborator@example.com"
                 className="glow-input w-full px-3.5 py-2.5 bg-[#050505] border border-[#1c1c1c] rounded-md font-mono text-xs text-white placeholder-[#222] focus:outline-none focus:border-[#00e87a] focus:shadow-[0_0_15px_-3px_rgba(0,232,122,0.15)] transition-all mb-5"
                 required
               />
@@ -355,13 +355,13 @@ export default function TeamPage() {
                   onClick={() => setSelectedTeam(null)}
                   className="flex-1 py-2 border border-[#1c1c1c] rounded-md font-mono text-xs text-[#666] hover:text-white hover:bg-[#0f0f0f] hover:border-[#444] transition-all"
                 >
-                  cancel
+                  Cancel
                 </button>
                 <button
                   onClick={() => addMember(selectedTeam._id)}
                   className="flex-1 py-2 bg-[#00e87a] hover:bg-[#1affaa] text-[#050505] font-mono text-xs font-semibold rounded-md transition shadow-[0_4px_15px_rgba(0,232,122,0.15)]"
                 >
-                  grant access
+                  Invite Member
                 </button>
               </div>
             </div>
@@ -373,10 +373,10 @@ export default function TeamPage() {
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#030303] border-t border-[#111] h-7 flex items-center px-5 gap-6 font-mono text-[10px] text-[#444] font-medium select-none">
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-[#00e87a] shadow-[0_0_6px_#00e87a]" />
-          <span>MESH_SYNC: SYNCED</span>
+          <span>Connected</span>
         </div>
         <div className="ml-auto text-[#333]">
-          [ {teams.length} ] INSTANCES INDEXED
+          [ {teams.length} ] TEAMS
         </div>
       </div>
     </div>

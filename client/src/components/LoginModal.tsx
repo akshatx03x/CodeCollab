@@ -34,14 +34,14 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     try {
       if (isLogin) {
         await login(email, password)
-        toast.success("Login established. Token allocated.")
+        toast.success("Logged in successfully.")
       } else {
         await register(name, email, password)
-        toast.success("Security identity profile registered successfully.")
+        toast.success("Registered successfully.")
       }
       onClose()
     } catch (error) {
-      toast.error(isLogin ? "Authentication hook rejected." : "Profile compilation failed.")
+      toast.error(isLogin ? "Login failed. Please check your credentials." : "Registration failed.")
     } finally {
       setLoading(false)
     }
@@ -159,7 +159,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               {isLogin ? "Login" : "Register"}
             </h2>
             <p style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", color: "#555", margin: 0, lineHeight: "1.4" }}>
-              {isLogin ? "Pass authentic security parameters to sync." : "Establish network root attributes inside registry database."}
+              {isLogin ? "Sign in to access your projects and collaborate." : "Create an account to start collaborating on projects."}
             </p>
           </div>
 
@@ -169,7 +169,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             {!isLogin && (
               <div style={{ animation: "fadeIn 0.2s ease-in-out" }}>
                 <label style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "10px", color: "#555", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Node Identity Identifier
+                  Full Name
                 </label>
                 <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
                   <User size={13} color="#444" style={{ position: "absolute", left: "14px", pointerEvents: "none" }} />
@@ -177,7 +177,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., Administrator Root"
+                    placeholder="e.g., Jane Doe"
                     className="auth-input"
                     style={inputStyle}
                     onFocus={(e) => { e.target.style.borderColor = "#00e87a"; e.target.style.boxShadow = "0 0 15px -3px rgba(0,232,122,0.15)" }}
@@ -191,7 +191,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             {/* EMAIL ACCESS KEY INPUT BLOCK */}
             <div>
               <label style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "10px", color: "#555", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Enter you Gmail
+                Email Address
               </label>
               <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
                 <Mail size={13} color="#444" style={{ position: "absolute", left: "14px", pointerEvents: "none" }} />
@@ -199,7 +199,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="operator@network.mesh"
+                  placeholder="email@example.com"
                   className="auth-input"
                   style={inputStyle}
                   onFocus={(e) => { e.target.style.borderColor = "#00e87a"; e.target.style.boxShadow = "0 0 15px -3px rgba(0,232,122,0.15)" }}
@@ -258,7 +258,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               {loading ? (
                 <>
                   <span style={{ animation: "blink .8s step-end infinite" }}>▋</span> 
-                  {isLogin ? "running login_seq..." : "compiling parameters..."}
+                  {isLogin ? "Logging in..." : "Creating account..."}
                 </>
               ) : (
                 <>{isLogin ? "Login" : "Register"}</>
@@ -269,7 +269,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           {/* VIEW SYSTEM TARGET ALTERNATOR LAYER FOOTER */}
           <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #121212", textAlign: "center" }}>
             <p style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", color: "#555", margin: 0 }}>
-              {isLogin ? "Target structural route absent?" : "Active registry parameter valid?"}{" "}
+              {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}

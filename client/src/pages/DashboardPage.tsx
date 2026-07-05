@@ -137,13 +137,13 @@ function ProjectCard({
           margin: "0 0 16px", lineHeight: "1.6", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
           flex: 1
         }}>
-          {project.description || "System container initialized without secondary documentation overrides."}
+          {project.description || "No project description provided."}
         </p>
 
         {/* Card Footer */}
         <div style={{ borderTop: "1px solid #121212", paddingTop: "14px", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
           <div>
-            <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>Host Node</div>
+            <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>Owner</div>
             <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", color: "#888", fontWeight: 500 }}>{project.owner?.name ?? "root"}</div>
           </div>
           
@@ -160,7 +160,7 @@ function ProjectCard({
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = "#f43f5e"; e.currentTarget.style.borderColor = "rgba(244,63,94,0.2)"; e.currentTarget.style.background = "rgba(244,63,94,0.02)" }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.borderColor = "#1a1a1a"; e.currentTarget.style.background = "#0d0d0d" }}
-                title="Terminate Node Assembly"
+                title="Delete Project"
               >
                 <Trash2 size={12} />
               </button>
@@ -194,7 +194,7 @@ function CreateModal({
   useEffect(() => { inputRef.current?.focus() }, [])
 
   const handle = async () => {
-    if (!name.trim()) { toast.error("Project identity key required"); return }
+    if (!name.trim()) { toast.error("Project name is required"); return }
     setLoading(true)
     await onCreate(name.trim(), desc)
     setLoading(false)
@@ -233,7 +233,7 @@ function CreateModal({
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#00e87a", boxShadow: "0 0 8px #00e87a" }} />
             <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", color: "#555", fontWeight: 500 }}>
-              initialize_node.sh
+              Create Project
             </span>
           </div>
           <button
@@ -291,7 +291,7 @@ function CreateModal({
               onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#444"; e.currentTarget.style.background = "#0f0f0f" }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#666"; e.currentTarget.style.borderColor = "#1c1c1c"; e.currentTarget.style.background = "transparent" }}
             >
-              abort
+              Cancel
             </button>
             <button
               onClick={handle}
@@ -311,7 +311,7 @@ function CreateModal({
             >
               {loading ? (
                 <><span style={{ animation: "blink .8s step-end infinite" }}>▋</span> Adding...</>
-              ) : " Add"}
+              ) : " Create"}
             </button>
           </div>
         </div>
@@ -342,7 +342,7 @@ export default function DashboardPage() {
       const r = await fetch(`${API_BASE_URL}/api/projects`)
       if (r.ok) { const d = await r.json(); setProjects(Array.isArray(d) ? d : []) }
       else setProjects([])
-    } catch { setProjects([]); toast.error("Hardware configuration pipeline interrupted link.") }
+    } catch { setProjects([]); toast.error("Failed to load projects. Please try again.") }
   }
 
   async function handleCreate(name: string, desc: string) {
@@ -355,23 +355,23 @@ export default function DashboardPage() {
       const proj = await r.json()
       setProjects((p) => [...p, proj])
       setShowCreate(false)
-      toast.success("Runtime module allocated successfully")
-    } catch { toast.error("Deployment failed injection error.") }
+      toast.success("Project created successfully")
+    } catch { toast.error("Failed to create project.") }
   }
 
   async function deleteProject(id: string) {
-    if (!window.confirm("Perform hard deletion protocol on this ecosystem container node? This state path is unrecoverable.")) return
+    if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return
     try {
       const r = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
         method: "DELETE", headers: { Authorization: `Bearer ${token}` },
       })
-      if (r.ok) { setProjects((p) => p.filter((x) => x._id !== id)); toast.success("Node unallocated from configuration index.") }
-      else { const e = await r.json(); toast.error(e.message ?? "Purge sequence rejected.") }
-    } catch { toast.error("Interface link loss inside purge operations.") }
+      if (r.ok) { setProjects((p) => p.filter((x) => x._id !== id)); toast.success("Project deleted successfully") }
+      else { const e = await r.json(); toast.error(e.message ?? "Failed to delete project.") }
+    } catch { toast.error("Error deleting project. Please check your connection.") }
   }
 
   function handleCardClick(project: Project) {
-    if (!user) { toast.error("Auth token mismatch. Please Try Logging In."); setShowLogin(true); return }
+    if (!user) { toast.error("Please log in to continue."); setShowLogin(true); return }
     navigate(`/project/${project._id}`)
   }
 
@@ -474,7 +474,7 @@ export default function DashboardPage() {
                   onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#333"; e.currentTarget.style.background = "#0d0d0d" }}
                   onMouseLeave={(e) => { e.currentTarget.style.color = "#555"; e.currentTarget.style.borderColor = "#161616"; e.currentTarget.style.background = "transparent" }}
                 >
-                  disconnect
+                  Logout
                 </button>
               </>
             ) : (
@@ -513,18 +513,18 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", marginBottom: "4px" }}>
                   <span style={{ color: "#00e87a" }}>$ </span>
-                  <span style={{ color: "#888" }}>find /dev/env -type cluster</span>
+                  <span style={{ color: "#888" }}>find /projects -type active</span>
                 </div>
                 <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", color: "#3a3a3a" }}>
-                  System call returned: 0 data environments structured.
+                  0 projects found.
                 </div>
               </div>
 
               <div style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "15px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>
-                Provision Workspace Cluster
+                Create Your First Project
               </div>
               <div style={{ fontFamily: "Inter, sans-serif", fontSize: "13px", color: "#666", lineHeight: 1.6, marginBottom: "24px" }}>
-                No synced virtual engines linked to current account path matrix. Establish a structural initialization script module.
+                You haven't created any projects yet. Create a new project to start collaborating.
               </div>
 
               {user ? (
@@ -538,7 +538,7 @@ export default function DashboardPage() {
                     boxShadow: "0 4px 15px rgba(0, 232, 122, 0.15)"
                   }}
                 >
-                  <Plus size={14} strokeWidth={2.5} /> Execute Init Routine
+                  <Plus size={14} strokeWidth={2.5} /> Create Project
                 </button>
               ) : (
                 <button
@@ -549,7 +549,7 @@ export default function DashboardPage() {
                     fontSize: "12px", fontWeight: 600, color: "#050505", cursor: "pointer",
                   }}
                 >
-                  Authenticate Key Allocation
+                  Log In to Start
                 </button>
               )}
             </div>
@@ -599,7 +599,7 @@ export default function DashboardPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0 12px", border: "1px solid #141414", borderRadius: "8px", background: "#0b0b0b", height: "38px" }}>
                   <Users size={12} color="#444" />
                   <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", color: "#666", fontWeight: 500 }}>
-                    {projects.length} nodes
+                    {projects.length} projects
                   </span>
                 </div>
               </div>
@@ -633,7 +633,7 @@ export default function DashboardPage() {
                   <div style={{ padding: "8px", borderRadius: "50%", background: "#0a0a0a", border: "1px solid #141414", marginBottom: "8px" }}>
                     <Plus size={16} color="#444" />
                   </div>
-                  <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", color: "#444", fontWeight: 500 }}>allocate_new_node</span>
+                  <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "11px", color: "#444", fontWeight: 500 }}>create_new_project</span>
                 </div>
               </div>
             ) : (
@@ -667,7 +667,7 @@ export default function DashboardPage() {
                       </span>
                       
                       <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", color: "#555", flex: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.description || "System data frame array parameters operating nominal configuration settings status block."}
+                        {p.description || "No description provided."}
                       </span>
                       
                       <DatePill date={p.createdAt} />
@@ -699,9 +699,9 @@ export default function DashboardPage() {
         height: "28px", display: "flex", alignItems: "center", padding: "0 20px", gap: "24px",
       }}>
         {[
-          { dot: true, label: "SYS_STATUS: ONLINE", color: "#00e87a" },
-          { label: "CORE: ISO_8859-1", icon: <Globe size={10} color="#333" /> },
-          { label: "PROTOCOL: SSH_V2", icon: <Shield size={10} color="#333" /> },
+          { dot: true, label: "System Status: Online", color: "#00e87a" },
+          { label: "Environment: Web", icon: <Globe size={10} color="#333" /> },
+          { label: "Secure Connection", icon: <Shield size={10} color="#333" /> },
         ].map(({ dot, label, color, icon }, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             {dot && <div style={{ width: "5px", height: "5px", borderRadius: "50%", background: color || "#00e87a", boxShadow: `0 0 6px ${color}` }} />}
@@ -710,7 +710,7 @@ export default function DashboardPage() {
           </div>
         ))}
         <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "10px", color: "#333", marginLeft: "auto", fontWeight: 500 }}>
-          [ {projects.length} ] ENV MAPPED
+          [ {projects.length} ] PROJECTS
         </span>
       </div>
 
